@@ -1,0 +1,59 @@
+# modify first map using chatgpt
+# given the following code, use hvplot to output an html file of the university area but make it a gold outline of 4 pixels with no fill and old main point to map using esri imagery as a base 
+# Work with vector data
+import geopandas as gpd
+from shapely.geometry import Point
+
+# Save maps and plots to files
+import holoviews as hv
+import hvplot.pandas
+hv.extension('bokeh')  # Ensure Bokeh extension is loaded for interactive plots
+
+# Search for locations by name - this might take a moment
+from osmnx import features as osm
+
+# Search for universities in Boulder, CO
+universities_gdf = osm.features_from_address(
+    'Boulder, CO, United States',
+    {'amenity': ['university']}
+)
+
+# Filter the GeoDataFrame to only include the University of Colorado
+ucb_gdf = universities_gdf[universities_gdf['name'].str.contains('University of Colorado', case=False, na=False)]
+
+# Define the coordinates for Old Main, Boulder, CO
+old_main_gdf = gpd.GeoDataFrame(
+    {'name': ['Old Main']},
+    geometry=[Point(-105.2705, 40.0095)],  # Correct longitude and latitude
+    crs="EPSG:4326"  # Coordinate reference system (WGS84)
+)
+
+# Plotting the University of Colorado area with hvplot
+# Styling the university boundary as a gold outline with no fill
+ucb_plot = ucb_gdf.hvplot(
+    geo=True,
+    tiles='ESRI',
+    line_width=4,
+    color='gold',
+    fill_alpha=0,  # No fill
+    hover_cols=['name'],  # Show name on hover
+    legend=False
+)
+
+# Plotting the Old Main point
+old_main_plot = old_main_gdf.hvplot.points(
+    geo=True,
+    color='gold',
+    size=100,
+    marker='*',
+    hover_cols=['name']
+)
+
+# Combine the plots
+combined_plot = ucb_plot * old_main_plot
+
+# Save the plot as an HTML file
+hvplot.save(combined_plot, 'university_of_colorado_map.html')
+
+# Display the plot
+combined_plot

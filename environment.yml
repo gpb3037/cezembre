@@ -1,0 +1,15 @@
+name: first-map
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.11
+  
+  # Plotting
+  - hvplot
+  - geoviews
+
+  # Spatial
+  - geopandas
+  - osmnx
