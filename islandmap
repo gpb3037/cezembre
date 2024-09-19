@@ -1,0 +1,36 @@
+import osmnx as ox
+import geopandas as gpd
+import hvplot.pandas  # For hvplot
+import holoviews as hv  # For interactive visualization
+from holoviews import opts
+
+# Enable Holoviews Bokeh extension
+hv.extension('bokeh')
+
+# Get the boundary of the islet of Cézembre, France from OpenStreetMap
+islet_name = 'Cézembre, France'
+gdf = ox.geometries_from_place(islet_name, tags={'place': 'islet'})
+
+# Convert the geometries to a GeoDataFrame
+gdf = gdf[['geometry']]
+
+# Ensure the geometry is projected to Web Mercator (EPSG:3857)
+gdf = gdf.to_crs(epsg=3857)
+
+# Define the ESRI tile source for background imagery
+esri_tiles = hv.Tiles('ESRI', extents=(gdf.total_bounds))
+
+# Plot the islet of Cézembre outline with a black border on top of ESRI imagery
+plot = esri_tiles * gdf.hvplot(geo=True, line_width=2, color='black', alpha=0.7)
+
+# Customize the plot options
+plot.opts(
+    width=800, height=600, 
+    title="Islet of Cézembre with Black Outline",
+    opts.WMTS(alpha=0.9)
+)
+
+# Export the interactive plot to an HTML file
+hv.save(plot, 'cezembre_islet_plot.html', backend='bokeh')
+
+print("HTML file with the Cézembre islet plot has been saved.")
